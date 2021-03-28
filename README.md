@@ -27,3 +27,10 @@ cd SourceFiles
 
 New features will be added by creating a separate branch based of the latest master. When the feature is complete, i.e compiles, builds and runs without errors
 the person responsible for this feature will create a merge request to master. Another team member will review the code and if accepted it shall be merged to master
+
+### Fixing unexpected behavior
+
+### Structure and content of commit messages
+
+The header of the commit message shall be a short descriptive message of what the specific commit does. A body to the commit message is not required on all commit messages, only those who need further explanations i.e if you can not explaint what the specific commit does by just using the header
+
