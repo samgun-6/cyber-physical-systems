@@ -25,7 +25,7 @@ cd SourceFiles
 
 ### New features
 
-New features will be added by creating a separate branch based of the latest master. When the feature is complete, i.e compiles, builds and runs without errors
+New features will be added by creating a new issue and then a branch based from this issue. When the feature is complete, i.e compiles, builds and runs without errors
 the person responsible for this feature will create a merge request to master. Another team member will review the code and if accepted it shall be merged to master
 
 ### Fixing unexpected behavior
