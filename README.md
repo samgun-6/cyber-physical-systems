@@ -30,8 +30,8 @@ the person responsible for this feature will create a merge request to master. A
 
 ### Fixing unexpected behavior
 
-On masterbranch, if the problem is causing the built to crash, we revert the commit and fix the issue on a separate branch.
-If the issue is a small bug, just create new branch starting with the name BUGFIX.
+To minimize the risks of having unexpected behavior we will contuct a code review on merge request, where the mergee will assign a group member to look through the code. If however an unexpected behavior is detected on the master branch it will be reverted until the lastest stable commit. The person who wrote the code that introduced a bug will be assigned to find the bug and fix it, this will be done by creating a branch "bugfix" that is based from the specific commit that introduced the bug. Depending on the severity of the bug, i.e if it is just a minor bug creating a new branch based of master and fixing the bug is enough.  
+
 
 ### Structure and content of commit messages
 
