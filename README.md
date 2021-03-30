@@ -30,10 +30,16 @@ the person responsible for this feature will create a merge request to master. A
 
 ### Fixing unexpected behavior
 
-To minimize the risks of having unexpected behavior we will contuct a code review on merge request, where the mergee will assign a group member to look through the code. If however an unexpected behavior is detected on the master branch it will be reverted until the lastest stable commit. The person who wrote the code that introduced a bug will be assigned to find the bug and fix it, this will be done by creating a branch "bugfix" that is based from the specific commit that introduced the bug. Depending on the severity of the bug, i.e if it is just a minor bug creating a new branch based of master and fixing the bug is enough.  
+To minimize the risks of having unexpected behavior we will conduct a code review on merge requests, where the mergee will assign a group member to look through the code and approve the merge. If an unexpected behaviour is detected on the master branch after the merge we will adhere to the following steps:
 
+1. Create a branch based on the current master version called hotfix or bugfix followed by a "-" and either created issue or feature for example hotfix-iss01 or bugfix-feature1
+2. Checkout to the branch and fix the bug
+3. Create a merge request to the master branch
+4. Review and accept (or decline) the merge request
+
+If other feature branches are active and are based on the master version with the bug we will pull the "fixed" master branch into that feature branch to be able to work on the latest version.
 
 ### Structure and content of commit messages
 
-The header of the commit message shall be a short descriptive message of what the specific commit does. A body to the commit message is not required on all commit messages, only those who need further explanations i.e if you can not explaint what the specific commit does by just using the header
+The subject line of the commit message shall be a short descriptive message of what the specific commit does. A body to the commit message is not required on all commit messages, only those who need further explanations i.e if you cannot explain what the specific commit does by just using the subject line. The subject line should be short and descriptive and we recommend 50 characters or less but a maximum of 72 characters so if longer it should go into the body. The subject line should be able to complete the sentence "If applied, this commit will": [specify your subject line]. The body should answer the "what" and "why".
 
