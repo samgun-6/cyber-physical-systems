@@ -30,6 +30,9 @@ the person responsible for this feature will create a merge request to master. A
 
 ### Fixing unexpected behavior
 
+If the issue is causing the built to crash, we revert the commit and fix the issue on a separate branch.
+If the issue is a small bug, just create new branch starting with the name BUGFIX.
+
 ### Structure and content of commit messages
 
 The header of the commit message shall be a short descriptive message of what the specific commit does. A body to the commit message is not required on all commit messages, only those who need further explanations i.e if you can not explaint what the specific commit does by just using the header
