@@ -30,7 +30,7 @@ the person responsible for this feature will create a merge request to master. A
 
 ### Fixing unexpected behavior
 
-If the issue is causing the built to crash, we revert the commit and fix the issue on a separate branch.
+On masterbranch, if the problem is causing the built to crash, we revert the commit and fix the issue on a separate branch.
 If the issue is a small bug, just create new branch starting with the name BUGFIX.
 
 ### Structure and content of commit messages
