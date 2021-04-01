@@ -32,7 +32,10 @@ the person responsible for this feature will create a merge request to master. A
 
 To minimize the risks of having unexpected behavior we will conduct a code review on merge requests, where the mergee will assign a group member to look through the code and approve the merge. If an unexpected behaviour is detected on the master branch after the merge we will adhere to the following steps:
 
-1. Create a branch based on the current master version called hotfix or bugfix followed by a "-" and either created issue or feature for example hotfix-iss01 or bugfix-feature1
+A hotfix is when fixing is conducted right away after finding it.
+A bugfix is when the fixing can be time consuming including major fixes. they are usually conducted in the planned work sessions
+
+1. Create a issue that explains the bug, then depending on the severity of the bug create a branch from this issue straight away and fix it or postpone it when there is time available. If the bug is minor, i.e a "hotfix" create a new branch straight away and fix the bug.
 2. Checkout to the branch and fix the bug
 3. Create a merge request to the master branch
 4. Review and accept (or decline) the merge request
