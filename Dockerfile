@@ -19,7 +19,7 @@ RUN cd /opt/sources && \
     mkdir build && \
     cd build && \
     cmake -D CMAKE_BUILD_TYPE=Release .. && \
-    make && make test && cp SourceFiles/primecheckerSource /tmp
+    make && cd tests/ && ./testsPrimeChecker && cd .. && cp SourceFiles/primecheckerSource /tmp
 
 ##################################################
 # Section 2: Bundle the application.
