@@ -13,10 +13,12 @@ During our weekly meeting we will talk about what has been done, and explain the
 We are going to use discord as our main communication channel where we will be active every day. We will use a meeting agenda to follow some structure during our meetings. A short summary will be provided by the person responsible for the meeting a given week, this will be iterated and changed every week so a new person is responsible for the meeting agenda.
 With the following iteration: Eric, David, Samuel, Martin.
 Tuesday 8-9 Standup 10 min, Planning 50 min
-Thursday 8-9 Standup 10 min, Planning 50 min
+Thursday 8-9 Standup 10 min, Planning 40 min, Group Feedback 10 min.
 Friday 8-9 (optional)
 
 ### Conflicts within the team
-Conflicts regarding tasks where there are different sets of opinions we will have a mandatory vote. If it’s a draw then the meeting facilitator for that week gets 2 votes to avoid the draw. 
-Issues within the team will be discussed, if someone does not contribute, laze around, does not communicate etc. If the issue does not get solved we will let our ta or lecturer in on the issue.
+Conflicts regarding tasks where there are different sets of opinions we will have a mandatory vote. If and only if it is a draw then the meeting facilitator will count as two votes, then the total amount of votes will be five (the facilitator can only vote for one option).
+Issues within the team will be discussed, if someone does not contribute, laze around, does not communicate etc. If the issue does not get solved we will let our ta or lecturer in on the issue, to act as a mediator.
 
+On thursdays meetings, every member of the group will give feeback about the groups enviroment and work progess.
+Also clarify expecations to avoid future conflicts.
