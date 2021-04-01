@@ -7,3 +7,4 @@ public:
   bool isPrime (uint16_t n);
 };
 #endif
+

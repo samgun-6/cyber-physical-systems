@@ -1,3 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-PROJECT(primechecker)
+project(myProject)
 ADD_SUBDIRECTORY(SourceFiles)
+ADD_SUBDIRECTORY(tests)
+include(CTest)
