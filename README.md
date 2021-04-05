@@ -1,5 +1,7 @@
 # 2021-group-11
 
+[![pipeline status](https://git.chalmers.se/courses/dit638/students/2021-group-11/badges/master/pipeline.svg)](https://git.chalmers.se/courses/dit638/students/2021-group-11/-/commits/master)
+
 ### Build dependencies
 
 - CMake >= 3.16.3
