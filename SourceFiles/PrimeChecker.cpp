@@ -20,3 +20,5 @@ bool PrimeChecker::isPrime (uint16_t n)
     }
   return retVal;
 }
+
+//Martin was here
