@@ -48,6 +48,9 @@ release:
     - docker-build
   stage: deploy
   script:
+    - touch tagname.txt
+    - echo $CI_COMMIT_TAG >> tagname.txt
+    - grep "^v[0-9].[0-9].[0-9]" tagname.txt
     - docker build -f Dockerfile -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
     - docker push "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG"
   rules:
