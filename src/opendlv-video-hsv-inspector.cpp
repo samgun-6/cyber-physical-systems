@@ -28,6 +28,21 @@ void createWindow(cv::Mat);
 
 void dilate(cv::Mat);
 
+
+void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour)
+{
+	int fontface = cv::FONT_HERSHEY_SIMPLEX;
+	double scale = 0.4;
+	int thickness = 1;
+	int baseline = 0;
+
+	cv::Size text = cv::getTextSize(label, fontface, scale, thickness, &baseline);
+	cv::Rect r = cv::boundingRect(contour);
+	cv::Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
+	cv::putText(im, label, pt, fontface, scale, CV_RGB(0,255,0), thickness, 8);
+}
+
+
 void createWindow(cv::Mat img)
 {
     cv::Mat imgHSV;
@@ -58,7 +73,7 @@ void createWindow(cv::Mat img)
 
     cv::add(imgColorSpace, imgColorSpace2, combined);
     cv::Rect myROI(1, 200, 620, 280);
-    cv::Mat cropped = combined(myROI);
+    cv::Mat cropped = combined(myROI); //This is the new window with the combined blue and yellow cones
 
 //    cv::imshow("croped", cropped);
 //    cv::imshow("YellowCones", cannyImg);
@@ -66,37 +81,42 @@ void createWindow(cv::Mat img)
 //    cv::imshow("Combined", combined);
        
     cv::imshow("croped", cropped);
-    dilate(cropped);
-    
-    cv::Mat mask = cv::Mat::zeros(cropped.rows, cropped.cols, CV_64FC1);
+    dilate(cropped); 
+   
     cv::rectangle(cropped, cv::Point(330, 200), cv::Point(450, 280), cv::Scalar(0,0,0), -1);
-//    cv::rectangle(mask, (0, 90), (290, 450), 255, -1);
-//    cv::bitwise_xor(cropped, cropped, mask);
     
     cv::imshow("dialted", cropped);
-    
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
-    findContours( cropped, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
-    cv::Mat drawing = cv::Mat::zeros( cropped.size(), CV_8UC3 );
+                
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy(contours.size());    
 
-    std::vector<cv::Point> approx;                
-    for( size_t i = 0; i< contours.size(); i++ )
-    {                                                
-        cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);      
-        if(approx.size() == 3)
-        {
-        }	
-            drawContours( drawing, contours, (int)i, cv::Scalar( 255, 0, 0 ), 2, cv::FILLED, hierarchy, 0 ); 
-         // std::cout << "position X = "<< contours[i][0] <<",\t position Y = "<< contours[i][1] << std::endl;          
+//    cv::findContours( cropped, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
+    findContours( cropped, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
+    std::vector<std::vector<cv::Point> > approx( contours.size() );
+    
+    std::vector<cv::Point2f>centers( contours.size() );
+    std::vector<float>radius( contours.size() );
+    for( size_t i = 0; i < contours.size(); i++ )
+    {
+        cv::approxPolyDP( contours[i], approx[i], 5, true);    
+        cv::minEnclosingCircle( approx[i], centers[i], radius[i] );
     }
+    cv::Mat drawing = cv::Mat::zeros( cropped.size(), CV_8UC3 );
+    for( size_t i = 0; i< contours.size(); i++ )
+    {
+      
+        drawContours( drawing, contours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, hierarchy, 0 );
+        cv::circle( drawing, centers[i], (int)radius[i], cv::Scalar(255,255,0), 2 );
+        setLabel(drawing, std::to_string(radius[i]), contours[i]);
+                             
+    }    
     cv::imshow("drawing", drawing);
 }
 
 void dilate(cv::Mat cropped)
 {
     cv::Mat element = cv::getStructuringElement( 0 ,
-                       cv::Size( 7, 7 ),
+                       cv::Size( 5, 5 ),
                        cv::Point( 3, 3 ) );
 
     cv::dilate(cropped, cropped, element);
