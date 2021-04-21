@@ -24,6 +24,8 @@
 #include <memory>
 #include <mutex>
 
+#define PI 3.14159265
+
 void createWindow(cv::Mat);
 
 void dilate(cv::Mat);
@@ -85,34 +87,49 @@ void createWindow(cv::Mat img)
     std::vector<float>radius( contours.size() );
     for( size_t i = 0; i < contours.size(); i++ )
     {
-        cv::approxPolyDP( contours[i], approx[i], 5, true);    
+        cv::approxPolyDP( contours[i], approx[i], 5, true); 
         cv::minEnclosingCircle( approx[i], centers[i], radius[i] );
     }
     cv::Mat drawing = cv::Mat::zeros( cropped.size(), CV_8UC3 );
     for( size_t i = 0; i< contours.size(); i++ )
-    {
-      
-        std::cout << centers.size() << std::endl;
-                
+    {                      
         drawContours( drawing, contours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, hierarchy, 0 );
-        cv::circle( drawing, centers[i], (int)radius[i], cv::Scalar(255,255,0), 2 );
-        setLabel(drawing, std::to_string(radius[i]), contours[i]);                             
+        if(radius[i] < 45 && radius[i] > 10)
+        {
+            cv::circle( drawing, centers[i], (int)radius[i], cv::Scalar(255,255,0), 2 ); //Draws circles on contours found on the drawing Mat
+        }
+        
+        //3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
+        std::stringstream temp;
+        temp << "X: " << centers[i];
+        setLabel(drawing, temp.str(), contours[i]);                             
     }    
+    double degree = 0;
     
-    if(centers.size() >= 2)
-    {        
-        cv::Point value1(static_cast<cv::Point2f>(centers[0]));
-        cv::Point value2(static_cast<cv::Point2f>(centers[1]));
+    if(centers.size() >= 3)
+    {
+        
         for(uint i = 0; i < centers.size(); i++)
         {
-            cv::line(drawing, value1, 
-                    value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);
-
+            if(radius[i] < 45 && radius[i] > 10 && radius[i+1] < 45 && radius[i+1] > 10 )
+            {
+                double m = 0;
+                cv::Point value1(static_cast<cv::Point2f>(centers[0]));
+                cv::Point value2(static_cast<cv::Point2f>(centers[1]));
+                cv::line(drawing, value1, 
+                    value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
+                
+                m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
+                degree = std::atan (m) * 180 / PI;                               
+                degree = degree / 100;         
+                std::cout << degree << std::endl;
+            }            
         }
     }
-    
-    
-    
+    else
+    {
+        std::cout << degree << std::endl;
+    }
     
     cv::imshow("imgColorspace2", imgColorSpace2);
     cv::imshow("drawing", drawing);
