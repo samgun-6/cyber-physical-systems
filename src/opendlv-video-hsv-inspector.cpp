@@ -60,37 +60,24 @@ void createWindow(cv::Mat img)
 
 //    cv::imshow("After filter", dst);
        
-    cv::inRange(imgHSV, cv::Scalar(15, 6, 113), cv::Scalar(82, 255, 255), imgColorSpace); //Yellow
     cv::inRange(imgHSV, cv::Scalar(47, 87, 34), cv::Scalar(126, 255, 86), imgColorSpace2); //Blue
 
-    cv::imshow("After Inrange yellow", imgColorSpace);
     cv::imshow("After Inrange blue", imgColorSpace2);
         
 //    cv::Mat cannyImg;
 //    cv::Canny(imgColorSpace, cannyImg, 0, 50, 5);
-       
-    cv::Mat combined; //Holds the blue and yellow cones in the same picture by cropping
-
-    cv::add(imgColorSpace, imgColorSpace2, combined);
+           
     cv::Rect myROI(1, 200, 620, 280);
-    cv::Mat cropped = combined(myROI); //This is the new window with the combined blue and yellow cones
+    cv::Mat cropped = imgColorSpace2(myROI); //This is the new window with the combined blue and yellow cones
 
-//    cv::imshow("croped", cropped);
-//    cv::imshow("YellowCones", cannyImg);
-//    cv::imshow("BluecCones", imgColorSpace2);
-//    cv::imshow("Combined", combined);
-       
-    cv::imshow("croped", cropped);
+
+    dilate(imgColorSpace2); 
     dilate(cropped); 
-   
-    cv::rectangle(cropped, cv::Point(330, 200), cv::Point(450, 280), cv::Scalar(0,0,0), -1);
-    
-    cv::imshow("dialted", cropped);
-                
+
+                      
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy(contours.size());    
 
-//    cv::findContours( cropped, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
     findContours( cropped, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
     std::vector<std::vector<cv::Point> > approx( contours.size() );
     
@@ -105,12 +92,32 @@ void createWindow(cv::Mat img)
     for( size_t i = 0; i< contours.size(); i++ )
     {
       
+        std::cout << centers.size() << std::endl;
+                
         drawContours( drawing, contours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, hierarchy, 0 );
         cv::circle( drawing, centers[i], (int)radius[i], cv::Scalar(255,255,0), 2 );
-        setLabel(drawing, std::to_string(radius[i]), contours[i]);
-                             
+        setLabel(drawing, std::to_string(radius[i]), contours[i]);                             
     }    
+    
+    if(centers.size() >= 2)
+    {        
+        cv::Point value1(static_cast<cv::Point2f>(centers[0]));
+        cv::Point value2(static_cast<cv::Point2f>(centers[1]));
+        for(uint i = 0; i < centers.size(); i++)
+        {
+            cv::line(drawing, value1, 
+                    value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);
+
+        }
+    }
+    
+    
+    
+    
+    cv::imshow("imgColorspace2", imgColorSpace2);
     cv::imshow("drawing", drawing);
+    cv::imshow("Cropped", cropped);
+
 }
 
 void dilate(cv::Mat cropped)
