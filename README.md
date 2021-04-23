@@ -17,12 +17,21 @@
 git clone git@git.chalmers.se:courses/
 	dit638/students/2021-group-11.git  # Fetch source
 
-mkdir build                                # Create build location
-cd build
-cmake ..                                   # Configure
-make                                       # Build
-cd SourceFiles
-./primechecker 11                          # Run program
+1. Below command has to be executed within a folder that contain rec files 
+docker run --rm --init --net=host --name=opendlv-vehicle-view -v $PWD:/opt/vehicle-view/recordings -v /var/run/docker.sock:/var/run/docker.sock -p 8081:8081 chalmersrevere/opendlv-vehicle-view-multi:v0.0.60
+
+2.a - Run below command if h264 decoder is not already built as an image
+docker build https://github.com/chalmers-revere/opendlv-video-h264-decoder.git#v0.0.4 -f Dockerfile.amd64 -t h264decoder:v0.0.4
+
+2.b
+docker run --rm -ti --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp h264decoder:v0.0.4 --cid=253 --name=img
+
+3. Must be exectued within the same folder as the Dockerfile of the project
+docker build -f Dockerfile -t somename .
+
+4.
+docker run --rm -ti --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp somename:latest --cid=253 --name=img --width=640 --height=480 --verbose
+
 ```
 
 ### New features
