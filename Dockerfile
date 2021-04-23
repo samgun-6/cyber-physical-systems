@@ -32,5 +32,5 @@ RUN mkdir build && \
     cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr .. && \
     make && make install
 
-ENTRYPOINT ["/usr/bin/opendlv-video-hsv-inspector"]
+ENTRYPOINT ["/usr/bin/template-opencv"]
 
