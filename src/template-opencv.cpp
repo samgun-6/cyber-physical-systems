@@ -29,9 +29,7 @@
 #define PI 3.14159265
 
 void createWindow(cv::Mat);
-
 void dilate(cv::Mat);
-
 
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour)
 {
@@ -50,56 +48,98 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 void createWindow(cv::Mat img, double* degree)
 {
     cv::Mat imgHSV;
-    cv::Mat imgColorSpace2;    
+    cv::Mat imgColorSpace; //Yellow cones
+    cv::Mat imgColorSpace2; //Blue cones    
     cvtColor(img, imgHSV, cv::COLOR_BGR2HSV);
     
     cv::inRange(imgHSV, cv::Scalar(47, 87, 34), cv::Scalar(126, 255, 86), imgColorSpace2); //Blue
-    cv::imshow("After Inrange blue", imgColorSpace2);
+    cv::inRange(imgHSV, cv::Scalar(15, 127, 142), cv::Scalar(120, 255, 255), imgColorSpace); //Yellow
                
-    cv::Rect myROI(1, 200, 620, 280);
-    cv::Mat cropped = imgColorSpace2(myROI); //This is the new window with the combined blue and yellow cones
-    
-    dilate(imgColorSpace2); 
-    dilate(cropped); 
-                  
-    std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i> hierarchy(contours.size());    
+    //yellow cones 
+    cv::Rect myROI2(1, 200, 620, 280);
+    cv::Mat yellowCones = imgColorSpace(myROI2); //smaller frame containing yellow cones
+    cv::rectangle(yellowCones, cv::Point(330, 200), cv::Point(450, 280), cv::Scalar(0,0,0), -1);
 
-    findContours( cropped, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
-    std::vector<std::vector<cv::Point> > approx( contours.size() );
+    //Blue cones
+    cv::Rect myROI(1, 200, 620, 280);
+    cv::Mat blueCones = imgColorSpace2(myROI); //smaller frame containing blue cones
     
-    std::vector<cv::Point2f>centers( contours.size() );
-    std::vector<float>radius( contours.size() );
-    for( size_t i = 0; i < contours.size(); i++ )
+    //Dilates blue cones
+    dilate(yellowCones); 
+    dilate(blueCones); 
+    
+    //Blue
+    std::vector<std::vector<cv::Point> > blueContours;
+    std::vector<cv::Vec4i> blueHierarchy(blueContours.size());        
+    findContours( blueCones, blueContours, blueHierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );    
+    std::vector<std::vector<cv::Point> > blueApprox( blueContours.size() );
+    std::vector<cv::Point2f>blueCenters( blueContours.size() );
+    std::vector<float>blueRadius( blueContours.size() );
+            
+    for( size_t i = 0; i < blueContours.size(); i++ )
     {
-        cv::approxPolyDP( contours[i], approx[i], 5, true); 
-        cv::minEnclosingCircle( approx[i], centers[i], radius[i] );
+        cv::approxPolyDP( blueContours[i], blueApprox[i], 5, true); 
+        cv::minEnclosingCircle( blueApprox[i], blueCenters[i], blueRadius[i] );
     }
-    cv::Mat drawing = cv::Mat::zeros( cropped.size(), CV_8UC3 );
-    for( size_t i = 0; i< contours.size(); i++ )
+    
+    cv::Mat drawing = cv::Mat::zeros( blueCones.size(), CV_8UC3 );
+    cv::Mat drawing2 = cv::Mat::zeros( yellowCones.size(), CV_8UC3 );
+    for( size_t i = 0; i< blueContours.size(); i++ )
     {                      
-        drawContours( drawing, contours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, hierarchy, 0 );
-        if(radius[i] < 45 && radius[i] > 10)
+        drawContours( drawing, blueContours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, blueHierarchy, 0 ); // Not needed
+        if(blueRadius[i] < 45 && blueRadius[i] > 10)
         {
-            cv::circle( drawing, centers[i], (int)radius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat
+            cv::circle( drawing, blueCenters[i], (int)blueRadius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat, used to visualize i.e not needed for final
         }
         
         // 3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
         std::stringstream temp;
-        temp << "X: " << centers[i];
-        setLabel(drawing, temp.str(), contours[i]);                             
+        temp << "X: " << blueRadius[i];
+        setLabel(drawing, temp.str(), blueContours[i]);                             
     }    
-    *degree = 0;
+       
+    //Yellow
+    std::vector<std::vector<cv::Point> > yellowContours;
+    std::vector<cv::Vec4i> yellowHierarchy(yellowContours.size());        
+    findContours( yellowCones, yellowContours, yellowHierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );    
+    std::vector<std::vector<cv::Point> > yellowApprox( yellowContours.size() );
+    std::vector<cv::Point2f>yellowCenters( yellowContours.size() );
+    std::vector<float> yellowRadius( yellowContours.size() );
     
-    if(centers.size() >= 3)
+    for( size_t i = 0; i < yellowContours.size(); i++ )
     {
-        for(uint i = 0; i < centers.size(); i++)
+        cv::approxPolyDP( yellowContours[i], yellowApprox[i], 5, true); 
+        cv::minEnclosingCircle( yellowApprox[i], yellowCenters[i], yellowRadius[i] );
+    }
+    for( size_t i = 0; i< yellowContours.size(); i++ )
+    {                      
+        drawContours( drawing2, yellowContours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, yellowHierarchy, 0 ); // Not needed
+        if(yellowRadius[i] < 45 && yellowRadius[i] > 10)
         {
-            if(radius[i] < 45 && radius[i] > 10 && radius[i+1] < 45 && radius[i+1] > 10 )
+            cv::circle( drawing2, yellowCenters[i], (int)yellowRadius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat, used to visualize i.e not needed for final
+        }
+        
+        // 3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
+        std::stringstream temp;
+        temp << "X: " << yellowRadius[i];
+        setLabel(drawing2, temp.str(), yellowContours[i]);                             
+    }
+    
+    
+    
+    std::cout << yellowCenters.size() << std::endl;
+    
+   *degree = 0;
+    
+    if(yellowCenters.size() == 0)
+    {
+        for(uint i = 0; i < blueCenters.size(); i++)
+        {
+            if(blueRadius[i] < 45 && blueRadius[i] > 10 && blueRadius[i+1] < 45 && blueRadius[i+1] > 10 )
             {
                 double m = 0;
-                cv::Point value1(static_cast<cv::Point2f>(centers[0]));
-                cv::Point value2(static_cast<cv::Point2f>(centers[1]));
+                cv::Point value1(static_cast<cv::Point2f>(blueCenters[i]));
+                cv::Point value2(static_cast<cv::Point2f>(blueCenters[i+1]));
                 cv::line(drawing, value1, // This line just draws a line between 2 coordinates to visualize between what coordinates the angle is calculated
                     value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
                 
@@ -114,10 +154,13 @@ void createWindow(cv::Mat img, double* degree)
     {
         std::cout << "Degree " << *degree << std::endl;
     }
-    
+        
     cv::imshow("imgColorspace2", imgColorSpace2);
-    cv::imshow("drawing", drawing);
-    cv::imshow("Cropped", cropped);
+    cv::imshow("blue cones drawing", drawing);
+    cv::imshow("BlueCones", blueCones);
+    cv::imshow("YellowCones", yellowCones);
+    cv::imshow("Yellow Cones drawing", drawing2);
+
 
 }
 
@@ -169,6 +212,15 @@ int32_t main(int32_t argc, char **argv) {
             // Interface to a running OpenDaVINCI session where network messages are exchanged.
             // The instance od4 allows you to send and receive messages.
             cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"]))};
+            
+            opendlv::proxy::GroundSteeringRequest gsr;
+            std::mutex gsrMutex;
+            auto onGroundSteeringRequest = [&gsr, &gsrMutex](cluon::data::Envelope &&env){
+                std::lock_guard<std::mutex> lck(gsrMutex);
+                gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
+            };
+        
+            od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
 
             // Endless loop; end the program by pressing Ctrl-C.
             while (od4.isRunning()) {
@@ -198,6 +250,10 @@ int32_t main(int32_t argc, char **argv) {
                     calAngle << micSecs << ";" << degree << ";" << std::endl;
                 }
                 calAngle.close();            
+                {
+                    std::lock_guard<std::mutex> lck(gsrMutex);
+                    std::cout << "main: groundSteering = " << gsr.groundSteering() << std::endl;
+                }
                     
                 // Display image on your screen.
                 if (VERBOSE) {
