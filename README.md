@@ -11,7 +11,7 @@
 - GNU GCC >= 9
 - Clang/LLVM >= 10
 
-### Build instructions
+### Build & Run instructions
 
 ```shell script
 git clone git@git.chalmers.se:courses/
@@ -33,6 +33,30 @@ docker build -f Dockerfile -t somename .
 docker run --rm -ti --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp:/tmp somename:latest --cid=253 --name=img --width=640 --height=480 --verbose
 
 ```
+
+### Extract data
+In order to compare data calculated in the microservice with the original data these calculations are stored in a file during runtime. The microservice runs from a built docker image and therefore this file is saved within a temporary docker container. If the file were to be saved outside of the container it would put more pressure on the microservice and might decrease the performance. Therefore the file needs to be extracted from the docker container in order to be analysed.
+
+**Steps**
+
+1. Build and run the project (see details above)
+2. Get the container name of the **running** docker container for the project
+	```
+	docker container ls
+	```
+3. Copy the file from the docker container and save to another directory.
+
+	Usage
+	```
+	docker cp <container_name>:<source_path> <destination_path>
+	```
+	Example
+	```
+	docker cp beautiful_ritchie:/opt/sources/calculated-steering-angle.csv .
+	
+	# This will copy the file at the specified path from container beautiful_ritchie
+	# And save it to your working directory specified by the "."
+	```
 
 ### New features
 

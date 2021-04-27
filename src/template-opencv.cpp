@@ -23,6 +23,8 @@
 // Include the GUI and image processing header files from OpenCV
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
+#include <fstream>
 
 #define PI 3.14159265
 
@@ -45,7 +47,7 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 }
 
 
-void createWindow(cv::Mat img)
+void createWindow(cv::Mat img, double* degree)
 {
     cv::Mat imgHSV;
     cv::Mat imgColorSpace2;    
@@ -87,7 +89,7 @@ void createWindow(cv::Mat img)
         temp << "X: " << centers[i];
         setLabel(drawing, temp.str(), contours[i]);                             
     }    
-    double degree = 0;
+    *degree = 0;
     
     if(centers.size() >= 3)
     {
@@ -102,15 +104,15 @@ void createWindow(cv::Mat img)
                     value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
                 
                 m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
-                degree = std::atan (m) * 180 / PI;                               
-                degree = degree / 100;         
-                std::cout << "Degree " << degree << std::endl;
+                *degree = std::atan (m) * 180 / PI;                               
+                *degree = *degree / 100;         
+                std::cout << "Degree " << *degree << std::endl;
             }            
         }
     }
     else
     {
-        std::cout << "Degree " << degree << std::endl;
+        std::cout << "Degree " << *degree << std::endl;
     }
     
     cv::imshow("imgColorspace2", imgColorSpace2);
@@ -152,6 +154,13 @@ int32_t main(int32_t argc, char **argv) {
         const uint32_t HEIGHT{static_cast<uint32_t>(std::stoi(commandlineArguments["height"]))};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
 
+        // Create file to store steering Angle
+        char steeringAngleData[ ] = "calculated-steering-angle.csv";
+        std::ofstream calAngle;
+        calAngle.open(steeringAngleData, std::ios::out | std::ios::app);
+        calAngle << "sampleTimeStamp.microseconds;calculatedSteeringAngle;" << std::endl;
+        calAngle.close();
+
         // Attach to the shared memory.
         std::unique_ptr<cluon::SharedMemory> sharedMemory{new cluon::SharedMemory{NAME}};
         if (sharedMemory && sharedMemory->valid()) {
@@ -176,8 +185,19 @@ int32_t main(int32_t argc, char **argv) {
                     cv::Mat wrapped(HEIGHT, WIDTH, CV_8UC4, sharedMemory->data());
                     img = wrapped.clone();
                 }                          
+                cluon::data::TimeStamp sampleTime {sharedMemory.get()->getTimeStamp().second};
                 sharedMemory->unlock();                
-                createWindow(img);                
+                
+                double degree;
+                createWindow(img, &degree);
+
+                // Save calculated steering angle to file
+                int64_t micSecs = cluon::time::toMicroseconds(sampleTime);
+                calAngle.open(steeringAngleData, std::ios::out | std::ios::app);
+                if (calAngle.is_open()){
+                    calAngle << micSecs << ";" << degree << ";" << std::endl;
+                }
+                calAngle.close();            
                     
                 // Display image on your screen.
                 if (VERBOSE) {
