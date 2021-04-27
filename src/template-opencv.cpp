@@ -28,8 +28,87 @@
 
 #define PI 3.14159265
 
-void createWindow(cv::Mat);
+void createWindow(cv::Mat, double* degree);
 void dilate(cv::Mat);
+void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);  
+
+void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& blueRadius, std::vector<cv::Point2f>& blueCenters, cv::Mat &drawing, double* degree  )
+{
+    *degree = 0;
+    
+    if(yellowCenters.size() == 0)
+    {
+        for(uint i = 0; i < blueCenters.size(); i++)
+        {
+            if(blueRadius[i] < 45 && blueRadius[i] > 10 && blueRadius[i+1] < 45 && blueRadius[i+1] > 10 )
+            {
+                double m = 0;
+                cv::Point value1(static_cast<cv::Point2f>(blueCenters[i]));
+                cv::Point value2(static_cast<cv::Point2f>(blueCenters[i+1]));
+                cv::line(drawing, value1, // This line just draws a line between 2 coordinates to visualize between what coordinates the angle is calculated
+                    value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
+                
+                m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
+                *degree = std::atan (m) * 180 / PI;                               
+                *degree = *degree / 100;         
+                std::cout << "Degree " << *degree << std::endl;
+            }            
+        }
+    }
+    else
+    {
+        std::cout << "Degree " << *degree << std::endl;
+    }
+}
+
+void bCones(std::vector<std::vector<cv::Point> >& blueContours, std::vector<cv::Vec4i>& blueHierarchy, std::vector<std::vector<cv::Point> >& blueApprox,
+        std::vector<cv::Point2f>& blueCenters, std::vector<float>& blueRadius, cv::Mat &drawing )
+{
+    for( size_t i = 0; i < blueContours.size(); i++ )
+    {
+        cv::approxPolyDP( blueContours[i], blueApprox[i], 5, true); 
+        cv::minEnclosingCircle( blueApprox[i], blueCenters[i], blueRadius[i] );
+    }
+    
+    
+    for( size_t i = 0; i< blueContours.size(); i++ )
+    {                      
+        drawContours( drawing, blueContours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, blueHierarchy, 0 ); // Not needed
+        if(blueRadius[i] < 45 && blueRadius[i] > 10)
+        {
+            cv::circle( drawing, blueCenters[i], (int)blueRadius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat, used to visualize i.e not needed for final
+        }
+        
+        // 3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
+        std::stringstream temp;
+        temp << "X: " << blueRadius[i];
+        setLabel(drawing, temp.str(), blueContours[i]);                             
+    }    
+}
+
+void yCones(std::vector<std::vector<cv::Point> >& yellowContours, std::vector<cv::Vec4i>& yellowHierarchy, std::vector<std::vector<cv::Point> >& yellowApprox,
+        std::vector<cv::Point2f>& yellowCenters, std::vector<float>& yellowRadius, cv::Mat &drawing2  )
+{
+    for( size_t i = 0; i < yellowContours.size(); i++ )
+    {
+        cv::approxPolyDP( yellowContours[i], yellowApprox[i], 5, true); 
+        cv::minEnclosingCircle( yellowApprox[i], yellowCenters[i], yellowRadius[i] );
+    }
+    for( size_t i = 0; i< yellowContours.size(); i++ )
+    {                      
+        drawContours( drawing2, yellowContours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, yellowHierarchy, 0 ); // Not needed
+        if(yellowRadius[i] < 45 && yellowRadius[i] > 10)
+        {
+            cv::circle( drawing2, yellowCenters[i], (int)yellowRadius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat, used to visualize i.e not needed for final
+        }
+        
+        // 3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
+        std::stringstream temp;
+        temp << "X: " << yellowRadius[i];
+        setLabel(drawing2, temp.str(), yellowContours[i]);                             
+    }
+}
+
 
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour)
 {
@@ -75,93 +154,31 @@ void createWindow(cv::Mat img, double* degree)
     std::vector<std::vector<cv::Point> > blueApprox( blueContours.size() );
     std::vector<cv::Point2f>blueCenters( blueContours.size() );
     std::vector<float>blueRadius( blueContours.size() );
-            
-    for( size_t i = 0; i < blueContours.size(); i++ )
-    {
-        cv::approxPolyDP( blueContours[i], blueApprox[i], 5, true); 
-        cv::minEnclosingCircle( blueApprox[i], blueCenters[i], blueRadius[i] );
-    }
+    cv::Mat drawing = cv::Mat::zeros( blueCones.size(), CV_8UC3 ); //Drawing blue cones
+    bCones(blueContours, blueHierarchy, blueApprox, blueCenters, blueRadius, drawing);        
     
-    cv::Mat drawing = cv::Mat::zeros( blueCones.size(), CV_8UC3 );
-    cv::Mat drawing2 = cv::Mat::zeros( yellowCones.size(), CV_8UC3 );
-    for( size_t i = 0; i< blueContours.size(); i++ )
-    {                      
-        drawContours( drawing, blueContours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, blueHierarchy, 0 ); // Not needed
-        if(blueRadius[i] < 45 && blueRadius[i] > 10)
-        {
-            cv::circle( drawing, blueCenters[i], (int)blueRadius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat, used to visualize i.e not needed for final
-        }
-        
-        // 3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
-        std::stringstream temp;
-        temp << "X: " << blueRadius[i];
-        setLabel(drawing, temp.str(), blueContours[i]);                             
-    }    
        
     //Yellow
     std::vector<std::vector<cv::Point> > yellowContours;
     std::vector<cv::Vec4i> yellowHierarchy(yellowContours.size());        
-    findContours( yellowCones, yellowContours, yellowHierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );    
+    findContours( yellowCones, yellowContours, yellowHierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );       
     std::vector<std::vector<cv::Point> > yellowApprox( yellowContours.size() );
     std::vector<cv::Point2f>yellowCenters( yellowContours.size() );
     std::vector<float> yellowRadius( yellowContours.size() );
-    
-    for( size_t i = 0; i < yellowContours.size(); i++ )
-    {
-        cv::approxPolyDP( yellowContours[i], yellowApprox[i], 5, true); 
-        cv::minEnclosingCircle( yellowApprox[i], yellowCenters[i], yellowRadius[i] );
-    }
-    for( size_t i = 0; i< yellowContours.size(); i++ )
-    {                      
-        drawContours( drawing2, yellowContours, (int)i, cv::Scalar( 255, 255, 255 ), 2, cv::FILLED, yellowHierarchy, 0 ); // Not needed
-        if(yellowRadius[i] < 45 && yellowRadius[i] > 10)
-        {
-            cv::circle( drawing2, yellowCenters[i], (int)yellowRadius[i], cv::Scalar(255,255,0), 2 ); // Draws circles on contours found on the drawing Mat, used to visualize i.e not needed for final
-        }
-        
-        // 3 lines below is just used right now to print coordinates of the middlepoint in the circle that it draws
-        std::stringstream temp;
-        temp << "X: " << yellowRadius[i];
-        setLabel(drawing2, temp.str(), yellowContours[i]);                             
-    }
-    
+    cv::Mat drawing2 = cv::Mat::zeros( yellowCones.size(), CV_8UC3 ); //Drawing yellow cones
+    yCones(yellowContours, yellowHierarchy, yellowApprox, yellowCenters, yellowRadius, drawing2);
     
     
     std::cout << yellowCenters.size() << std::endl;
     
-   *degree = 0;
-    
-    if(yellowCenters.size() == 0)
-    {
-        for(uint i = 0; i < blueCenters.size(); i++)
-        {
-            if(blueRadius[i] < 45 && blueRadius[i] > 10 && blueRadius[i+1] < 45 && blueRadius[i+1] > 10 )
-            {
-                double m = 0;
-                cv::Point value1(static_cast<cv::Point2f>(blueCenters[i]));
-                cv::Point value2(static_cast<cv::Point2f>(blueCenters[i+1]));
-                cv::line(drawing, value1, // This line just draws a line between 2 coordinates to visualize between what coordinates the angle is calculated
-                    value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
-                
-                m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
-                *degree = std::atan (m) * 180 / PI;                               
-                *degree = *degree / 100;         
-                std::cout << "Degree " << *degree << std::endl;
-            }            
-        }
-    }
-    else
-    {
-        std::cout << "Degree " << *degree << std::endl;
-    }
+   
+    mainAlgordom(yellowCenters, blueRadius, blueCenters, drawing, degree);
         
     cv::imshow("imgColorspace2", imgColorSpace2);
     cv::imshow("blue cones drawing", drawing);
     cv::imshow("BlueCones", blueCones);
     cv::imshow("YellowCones", yellowCones);
     cv::imshow("Yellow Cones drawing", drawing2);
-
-
 }
 
 void dilate(cv::Mat cropped)
