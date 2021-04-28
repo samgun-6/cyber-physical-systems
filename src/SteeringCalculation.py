@@ -43,7 +43,7 @@ def comparisonSteering(mergedFile):
 
 def plotLineGraphComp(ourFile, originalFile):
     plt.plot(originalFile['groundSteering'], label = "Expected")
-    plt.plot(ourFile['groundSteering'] * 0.5, label = "Actual")
+    plt.plot(ourFile['groundSteering'], label = "Actual")
 
     plt.ylabel('Steering Angel 0.1 = 10 degrees')
     plt.xlabel('N timestamps')
