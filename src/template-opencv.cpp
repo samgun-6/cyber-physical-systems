@@ -28,36 +28,44 @@
 
 #define PI 3.14159265
 
-void createWindow(cv::Mat, double* degree);
+void createWindow(cv::Mat, double* degree, double* temp);
 void dilate(cv::Mat);
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);  
 
-void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& blueRadius, std::vector<cv::Point2f>& blueCenters, cv::Mat &drawing, double* degree  )
+void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& blueRadius, std::vector<cv::Point2f>& blueCenters, cv::Mat &drawing, double* degree, double* temp  )
 {
-    *degree = 0;
-    
-    if(yellowCenters.size() == 0)
+    if(yellowCenters.size() == 0 && blueCenters.size() != 0 )
     {
-        for(uint i = 0; i < blueCenters.size(); i++)
+        if(blueRadius[0] < 45 && blueRadius[0] > 10 && blueRadius[1] < 45 && blueRadius[1] > 10)
         {
-            if(blueRadius[i] < 45 && blueRadius[i] > 10 && blueRadius[i+1] < 45 && blueRadius[i+1] > 10 )
+            double m = 0;
+            cv::Point value1(static_cast<cv::Point2f>(blueCenters[0]));
+            cv::Point value2(static_cast<cv::Point2f>(blueCenters[1]));
+            cv::line(drawing, value1, //This line just draws a line between 2 coordinates to visualize between what coordinates the angle is calculated
+                value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
+
+            m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
+            *degree = std::atan (m) * 180 / PI;                               
+            *degree = *degree / 100;
+
+            if(*degree > 0.60 && *degree < 0.70) //In some cases we get a way bigger angle because of noise, thus we divide the large number by reasonable number
             {
-                double m = 0;
-                cv::Point value1(static_cast<cv::Point2f>(blueCenters[i]));
-                cv::Point value2(static_cast<cv::Point2f>(blueCenters[i+1]));
-                cv::line(drawing, value1, // This line just draws a line between 2 coordinates to visualize between what coordinates the angle is calculated
-                    value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
-                
-                m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
-                *degree = std::atan (m) * 180 / PI;                               
-                *degree = *degree / 100;         
-                std::cout << "Degree " << *degree << std::endl;
-            }            
+                *degree = * degree / 4;
+            }
+            else if(*degree > 0.70) //If degree is above 70 divide by 5
+            {
+                *degree = * degree / 5;
+            }
+            *temp = *degree;
         }
+    }
+    else if(*degree == *temp)
+    {
+        return;
     }
     else
     {
-        std::cout << "Degree " << *degree << std::endl;
+        *degree = 0;
     }
 }
 
@@ -124,7 +132,7 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 }
 
 
-void createWindow(cv::Mat img, double* degree)
+void createWindow(cv::Mat img, double* degree, double* temp)
 {
     cv::Mat imgHSV;
     cv::Mat imgColorSpace; //Yellow cones
@@ -168,11 +176,7 @@ void createWindow(cv::Mat img, double* degree)
     cv::Mat drawing2 = cv::Mat::zeros( yellowCones.size(), CV_8UC3 ); //Drawing yellow cones
     yCones(yellowContours, yellowHierarchy, yellowApprox, yellowCenters, yellowRadius, drawing2);
     
-    
-    std::cout << yellowCenters.size() << std::endl;
-    
-   
-    mainAlgordom(yellowCenters, blueRadius, blueCenters, drawing, degree);
+    mainAlgordom(yellowCenters, blueRadius, blueCenters, drawing, degree, temp);
         
     cv::imshow("imgColorspace2", imgColorSpace2);
     cv::imshow("blue cones drawing", drawing);
@@ -258,7 +262,9 @@ int32_t main(int32_t argc, char **argv) {
                 sharedMemory->unlock();                
                 
                 double degree;
-                createWindow(img, &degree);
+                double temp;
+                createWindow(img, &degree, &temp);
+                std::cout << "Degree " << degree << std::endl;
 
                 // Save calculated steering angle to file
                 int64_t micSecs = cluon::time::toMicroseconds(sampleTime);
@@ -267,10 +273,6 @@ int32_t main(int32_t argc, char **argv) {
                     calAngle << micSecs << ";" << degree << ";" << std::endl;
                 }
                 calAngle.close();            
-                {
-                    std::lock_guard<std::mutex> lck(gsrMutex);
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << std::endl;
-                }
                     
                 // Display image on your screen.
                 if (VERBOSE) {
