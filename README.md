@@ -58,6 +58,24 @@ In order to compare data calculated in the microservice with the original data t
 	# And save it to your working directory specified by the "."
 	```
 
+### Setup SteeringCalculation.py
+
+**Steps**
+
+1. Install python version 3.7 or higher.
+2. Install the pandas package via the terminal
+	```
+	sudo apt install python3-pandas
+	```
+3. Import the right files to compare results.
+
+	On line 82-83 in SteeringCalculation.py these two lines is the path for import
+	```
+	csvFile = pd.read_csv("<path_to_your_file>", sep = ";")
+	csvFileOriginal = pd.read_csv("<path_to_original_file>", sep = ";")
+	```
+	Then run the program in the compiler and the results will be shown in the console.
+
 ### New features
 
 New features will be added by creating a new issue and then a branch based from this issue. When the feature is complete, i.e compiles, builds and runs without errors
