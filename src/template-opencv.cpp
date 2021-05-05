@@ -264,7 +264,6 @@ int32_t main(int32_t argc, char **argv) {
                 double degree;
                 double temp;
                 createWindow(img, &degree, &temp);
-                std::cout << "Degree " << degree << std::endl;
 
                 // Save calculated steering angle to file
                 int64_t micSecs = cluon::time::toMicroseconds(sampleTime);
@@ -272,7 +271,10 @@ int32_t main(int32_t argc, char **argv) {
                 if (calAngle.is_open()){
                     calAngle << micSecs << ";" << degree << ";" << std::endl;
                 }
-                calAngle.close();            
+                calAngle.close();
+
+                // Print required information to console
+                std::cout << "Group_11;" << micSecs << ";" << degree << std::endl;            
                     
                 // Display image on your screen.
                 if (VERBOSE) {
