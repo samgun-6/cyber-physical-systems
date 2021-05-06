@@ -32,7 +32,9 @@ void createWindow(cv::Mat, double* degree, double* temp);
 void dilate(cv::Mat);
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);  
 
-void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& blueRadius, std::vector<cv::Point2f>& blueCenters, cv::Mat &drawing, double* degree, double* temp  )
+void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& blueRadius, 
+                  std::vector<cv::Point2f>& blueCenters, cv::Mat &drawing, 
+                  double* degree, double* temp  )
 {
     if(yellowCenters.size() == 0 && blueCenters.size() != 0 )
     {
@@ -132,7 +134,7 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 }
 
 
-void createWindow(cv::Mat img, double* degree, double* temp)
+void createWindow(cv::Mat img, double* degree, double* temp, const bool* VERBOSE)
 {
     cv::Mat imgHSV;
     cv::Mat imgColorSpace; //Yellow cones
@@ -177,12 +179,14 @@ void createWindow(cv::Mat img, double* degree, double* temp)
     yCones(yellowContours, yellowHierarchy, yellowApprox, yellowCenters, yellowRadius, drawing2);
     
     mainAlgordom(yellowCenters, blueRadius, blueCenters, drawing, degree, temp);
-        
-    cv::imshow("imgColorspace2", imgColorSpace2);
-    cv::imshow("blue cones drawing", drawing);
-    cv::imshow("BlueCones", blueCones);
-    cv::imshow("YellowCones", yellowCones);
-    cv::imshow("Yellow Cones drawing", drawing2);
+
+    if(*VERBOSE){    
+        cv::imshow("imgColorspace2", imgColorSpace2);
+        cv::imshow("blue cones drawing", drawing);
+        cv::imshow("BlueCones", blueCones);
+        cv::imshow("YellowCones", yellowCones);
+        cv::imshow("Yellow Cones drawing", drawing2);
+    }
 }
 
 void dilate(cv::Mat cropped)
@@ -263,7 +267,7 @@ int32_t main(int32_t argc, char **argv) {
                 
                 double degree;
                 double temp;
-                createWindow(img, &degree, &temp);
+                createWindow(img, &degree, &temp, &VERBOSE);
 
                 // Save calculated steering angle to file
                 int64_t micSecs = cluon::time::toMicroseconds(sampleTime);
