@@ -56,30 +56,9 @@ void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& b
             {
                 *degree = * degree / 5;
             }
-
-            //for minus degrees
-
-            if(*degree < -0.60 && *degree > -0.70) //In some cases we get a way bigger angle because of noise, thus we divide the large number by reasonable number
-            {
-                *degree = * degree / 4;
-            }
-            else if(*degree < -0.70) //If degree is above 70 divide by 5
-            {
-                *degree = * degree / 5;
-            }   
-
-
-   else if(blueCenters.size() == 0 && yellowCenters.size() != 0 ){
-  std::cout << "YELLOWW"<< endl;
-   }
-
-         
+            *temp = *degree;
         }
     }
-
-    
-
-
     else if(*degree == *temp)
     {
         return;
