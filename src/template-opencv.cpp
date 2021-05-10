@@ -32,9 +32,8 @@ void createWindow(cv::Mat, double* degree, double* temp);
 void dilate(cv::Mat);
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);  
 
-void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& blueRadius, 
-                  std::vector<cv::Point2f>& blueCenters, cv::Mat &drawing, 
-                  double* degree, double* temp  )
+void mainAlgordom(std::vector<cv::Point2f>& yellowCenters,std::vector<cv::Point2f>& blueCenters,std::vector<float>& yellowRadius, std::vector<float>& blueRadius,  cv::Mat &drawing, double* degree, double* temp  )
+
 {
     if(yellowCenters.size() == 0 && blueCenters.size() != 0 )
     {
@@ -72,6 +71,49 @@ void mainAlgordom(std::vector<cv::Point2f>& yellowCenters, std::vector<float>& b
             *temp = *degree;
         }
     }
+
+else if(blueCenters.size() ==0 && yellowCenters.size() != 0 ){
+
+  if(yellowRadius[0] < 45 && yellowRadius[0] > 10 && yellowRadius[1] < 45 && yellowRadius[1] > 10)
+        {
+            double m = 0;
+            cv::Point value1(static_cast<cv::Point2f>(yellowCenters[0]));
+            cv::Point value2(static_cast<cv::Point2f>(yellowCenters[1]));
+            cv::line(drawing, value1, //This line just draws a line between 2 coordinates to visualize between what coordinates the angle is calculated
+                value2, cv::Scalar(255, 140, 0), 2, cv::LINE_8);                                                                
+
+            m = ((static_cast<float>(value2.y - value1.y)) / (static_cast<float>(value2.x - value1.x)));
+            *degree = std::atan (m) * 180 / PI;                               
+            *degree = *degree / 100;
+
+            if(*degree > 0.60 && *degree < 0.70) //In some cases we get a way bigger angle because of noise, thus we divide the large number by reasonable number
+            {
+                *degree = * degree / 4;
+            }
+            else if(*degree > 0.70) //If degree is above 70 divide by 5
+            {
+                *degree = * degree / 5;
+            }
+
+            //for minus degrees
+
+            else if(*degree < -0.60 && *degree > -0.70) //In some cases we get a way bigger angle because of noise, thus we divide the large number by reasonable number
+            {
+                *degree = * degree / 4;
+            }
+            else if(*degree < -0.70) //If degree is above 70 divide by 5
+            {
+                *degree = * degree / 5;
+            }   
+
+            *temp = *degree;
+         
+        }
+   }
+
+
+
+
     else if(*degree == *temp)
     {
         return;
@@ -189,7 +231,8 @@ void createWindow(cv::Mat img, double* degree, double* temp, const bool* VERBOSE
     cv::Mat drawing2 = cv::Mat::zeros( yellowCones.size(), CV_8UC3 ); //Drawing yellow cones
     yCones(yellowContours, yellowHierarchy, yellowApprox, yellowCenters, yellowRadius, drawing2);
     
-    mainAlgordom(yellowCenters, blueRadius, blueCenters, drawing, degree, temp);
+    mainAlgordom(yellowCenters,blueCenters,yellowRadius, blueRadius, drawing, degree, temp);
+
 
     if(*VERBOSE){    
         cv::imshow("imgColorspace2", imgColorSpace2);
